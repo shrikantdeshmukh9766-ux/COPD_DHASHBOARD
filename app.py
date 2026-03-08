@@ -37,7 +37,7 @@ dup_count = (
 # merge both results
 result = pd.merge(total_forms, dup_count, on='asha')
 
-print(result)"
+print(result)
 form_id = "afWux6DQFqmZrEpK54BobD"
 kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
 
@@ -90,3 +90,4 @@ st.subheader("Forms Filled by ASHA")
 
 
 st.bar_chart(asha_summary.set_index("asha"))
+
