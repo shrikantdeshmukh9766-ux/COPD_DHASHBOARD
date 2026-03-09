@@ -4,90 +4,88 @@ from koboextractor import KoboExtractor
 
 st.title("ASHA Form Submission Dashboard")
 
-
 my_token = "23801d339dd6d16509a79250731f126401d5f7a3"
 form_id = "afWux6DQFqmZrEpK54BobD"
 kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
 
-# connect
-kobo = KoboExtractor(my_token, kobo_base_url)
+# Refresh Button
+if st.button("🔄 Refresh Data"):
 
-# download data
-data = kobo.get_data(form_id)
+    # Connect Kobo
+    kobo = KoboExtractor(my_token, kobo_base_url)
 
-# dataframe
-df = pd.json_normalize(data['results'])
+    # Download data
+    data = kobo.get_data(form_id)
 
-# clean column names
-df.columns = df.columns.str.split('/').str[-1]
+    df = pd.json_normalize(data['results'])
 
-# remove label columns if present
-df = df.loc[:, ~df.columns.str.contains('_label')]
+    # Clean column names
+    df.columns = df.columns.str.split('/').str[-1]
 
-# total forms submitted per ASHA
-total_forms = df.groupby('asha').size().reset_index(name='total_forms')
+    # Remove label columns
+    df = df.loc[:, ~df.columns.str.contains('_label')]
 
-# duplicate participant count per ASHA
-dup_count = (
-    df.groupby('asha')['Paticipant']
-      .apply(lambda x: x.duplicated().sum())
-      .reset_index(name='duplicate_participants')
-)
+    # Convert submission time
+    df['_submission_time'] = pd.to_datetime(df['_submission_time'])
 
-# merge both results
-result = pd.merge(total_forms, dup_count, on='asha')
+    # Extract month
+    df['month'] = df['_submission_time'].dt.month_name()
 
-print(result)
-form_id = "afWux6DQFqmZrEpK54BobD"
-kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
+    # Save in session
+    st.session_state["df"] = df
 
-# Connect Kobo
-kobo = KoboExtractor(my_token, kobo_base_url)
 
-# Load data
-data = kobo.get_data(form_id)
+# If data loaded
+if "df" in st.session_state:
 
-df = pd.json_normalize(data['results'])
+    df = st.session_state["df"]
 
-# Clean column names
-df.columns = df.columns.str.split('/').str[-1]
+    # Sidebar filter
+    st.sidebar.header("Filter")
 
-# Convert submission time
-df['_submission_time'] = pd.to_datetime(df['_submission_time'])
+    months = ["Overall"] + sorted(df['month'].dropna().unique())
 
-# Extract month
-df['month'] = df['_submission_time'].dt.month_name()
+    selected_month = st.sidebar.selectbox(
+        "Select Month",
+        months
+    )
 
-# Sidebar filter
-st.sidebar.header("Filter")
+    # Apply filter
+    if selected_month != "Overall":
+        filtered_df = df[df['month'] == selected_month]
+    else:
+        filtered_df = df
 
-months = ["Overall"] + sorted(df['month'].dropna().unique())
+    # ASHA total forms
+    total_forms = (
+        filtered_df.groupby('asha')
+        .size()
+        .reset_index(name='Forms Filled')
+    )
 
-selected_month = st.sidebar.selectbox(
-    "Select Month",
-    months
-)
+    # Duplicate participants
+    dup_count = (
+        filtered_df.groupby('asha')['Paticipant']
+        .apply(lambda x: x.duplicated().sum())
+        .reset_index(name='Duplicate Participants')
+    )
 
-# Apply filter
-if selected_month != "Overall":
-    filtered_df = df[df['month'] == selected_month]
+    # Merge results
+    result = pd.merge(total_forms, dup_count, on='asha')
+
+    st.subheader("ASHA Summary")
+
+    st.dataframe(result, use_container_width=True)
+
+    st.subheader("Forms Filled by ASHA")
+
+    st.bar_chart(total_forms.set_index("asha"))
+
 else:
-    filtered_df = df
 
-# ASHA wise form count
-asha_summary = (
-    filtered_df.groupby('asha')
-    .size()
-    .reset_index(name='Forms Filled')
-)
-
-st.subheader("ASHA Wise Forms Filled")
-
-st.dataframe(asha_summary, use_container_width=True)
-
-# Chart
-st.subheader("Forms Filled by ASHA")
+    st.info("Click 🔄 Refresh Data to load KoBo data")
 
 
 st.bar_chart(asha_summary.set_index("asha"))
+
 
