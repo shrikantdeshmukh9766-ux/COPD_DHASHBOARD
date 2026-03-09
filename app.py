@@ -86,6 +86,6 @@ else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
 
 
-st.bar_chart(asha_summary.set_index("asha"))
+
 
 
