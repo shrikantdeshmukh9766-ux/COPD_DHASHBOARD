@@ -4,12 +4,12 @@ from koboextractor import KoboExtractor
 
 st.title("ASHA Form Submission Dashboard")
 
-my_token = "23801d339dd6d16509a79250731f126401d5f7a3"
+my_token = "YOUR_TOKEN"
 form_id = "afWux6DQFqmZrEpK54BobD"
 kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
 
 
-# Refresh Data
+# ---------------- REFRESH DATA ----------------
 if st.button("🔄 Refresh Data"):
 
     kobo = KoboExtractor(my_token, kobo_base_url)
@@ -29,12 +29,12 @@ if st.button("🔄 Refresh Data"):
     st.session_state["df"] = df
 
 
-# If data loaded
+# ---------------- IF DATA LOADED ----------------
 if "df" in st.session_state:
 
     df = st.session_state["df"]
 
-    # ---------------- MONTH FILTER (TABLE 1 ONLY) ----------------
+    # ---------------- MONTH FILTER ----------------
     st.sidebar.header("Month Filter")
 
     months = ["Overall"] + sorted(df["month"].dropna().unique())
@@ -62,7 +62,21 @@ if "df" in st.session_state:
     st.dataframe(total_forms, use_container_width=True)
 
 
-    # ---------------- ASHA FILTER (TABLE 2 ONLY) ----------------
+    # ---------------- TABLE 2 ----------------
+    st.subheader("ASHA Wise Duplicate Participants")
+
+    dup_all = df[df.duplicated(subset=["asha","Paticipant"], keep=False)]
+
+    dup_summary = (
+        dup_all.groupby("asha")["Paticipant"]
+        .nunique()
+        .reset_index(name="Duplicate Participants")
+    )
+
+    st.dataframe(dup_summary, use_container_width=True)
+
+
+    # ---------------- ASHA FILTER ----------------
     st.sidebar.header("ASHA Filter")
 
     selected_asha = st.sidebar.selectbox(
@@ -73,7 +87,7 @@ if "df" in st.session_state:
     df_asha = df[df["asha"] == selected_asha]
 
 
-    # ---------------- DUPLICATES ----------------
+    # ---------------- DUPLICATE LIST ----------------
     dup = df_asha[df_asha["Paticipant"].duplicated(keep=False)]
 
     dup_list = (
@@ -81,17 +95,6 @@ if "df" in st.session_state:
         .size()
         .reset_index(name="Duplicate Count")
     )
-
-
-    # ---------------- TABLE 2 ----------------
-    st.subheader("Duplicate Summary")
-
-    summary = pd.DataFrame({
-        "ASHA":[selected_asha],
-        "Duplicate Participants":[dup["Paticipant"].nunique()]
-    })
-
-    st.dataframe(summary, use_container_width=True)
 
 
     # ---------------- TABLE 3 ----------------
@@ -102,4 +105,3 @@ if "df" in st.session_state:
 
 else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
-
