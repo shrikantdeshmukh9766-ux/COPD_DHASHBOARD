@@ -18,9 +18,8 @@ if st.button("🔄 Refresh Data"):
 
     df = pd.json_normalize(data['results'])
 
-    # clean column names
+    # Clean column names
     df.columns = df.columns.str.split('/').str[-1]
-    df.columns = df.columns.str.lower()
 
     st.session_state["df"] = df
 
@@ -30,7 +29,7 @@ if "df" in st.session_state:
 
     df = st.session_state["df"]
 
-    # ---------- TABLE 1 ----------
+    # -------- TABLE 1 --------
     st.subheader("Total Forms by ASHA")
 
     total_forms = (
@@ -42,7 +41,7 @@ if "df" in st.session_state:
     st.dataframe(total_forms, use_container_width=True)
 
 
-    # ---------- SIDEBAR FILTER ----------
+    # -------- FILTER --------
     st.sidebar.header("Filter")
 
     selected_asha = st.sidebar.selectbox(
@@ -50,11 +49,10 @@ if "df" in st.session_state:
         sorted(df["asha"].dropna().unique())
     )
 
-
     df_asha = df[df["asha"] == selected_asha]
 
 
-    # ---------- DUPLICATE CALCULATION ----------
+    # -------- DUPLICATES --------
     dup = df_asha[df_asha["Participant"].duplicated(keep=False)]
 
     dup_list = (
@@ -64,7 +62,7 @@ if "df" in st.session_state:
     )
 
 
-    # ---------- SUMMARY TABLE ----------
+    # -------- SUMMARY --------
     st.subheader("Duplicate Summary")
 
     summary = pd.DataFrame({
@@ -75,13 +73,11 @@ if "df" in st.session_state:
     st.dataframe(summary, use_container_width=True)
 
 
-    # ---------- DUPLICATE LIST ----------
-    st.subheader("Actual Duplicate Participants")
+    # -------- DUPLICATE LIST --------
+    st.subheader("Actual Duplicate Participant List")
 
     st.dataframe(dup_list, use_container_width=True)
 
 
 else:
-
     st.info("Click 🔄 Refresh Data to load KoBo data")
-
