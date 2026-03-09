@@ -1,6 +1,3 @@
-
-
-###########
 import streamlit as st
 import pandas as pd
 from koboextractor import KoboExtractor
@@ -12,19 +9,23 @@ form_id = "afWux6DQFqmZrEpK54BobD"
 kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
 
 
-# Refresh data
+# Refresh Data
 if st.button("🔄 Refresh Data"):
 
     kobo = KoboExtractor(my_token, kobo_base_url)
+
     data = kobo.get_data(form_id)
 
     df = pd.json_normalize(data['results'])
 
+    # clean column names
     df.columns = df.columns.str.split('/').str[-1]
+    df.columns = df.columns.str.lower()
 
     st.session_state["df"] = df
 
 
+# If data loaded
 if "df" in st.session_state:
 
     df = st.session_state["df"]
@@ -41,7 +42,7 @@ if "df" in st.session_state:
     st.dataframe(total_forms, use_container_width=True)
 
 
-    # ---------- ASHA FILTER ----------
+    # ---------- SIDEBAR FILTER ----------
     st.sidebar.header("Filter")
 
     selected_asha = st.sidebar.selectbox(
@@ -50,24 +51,21 @@ if "df" in st.session_state:
     )
 
 
-    # Filter data
     df_asha = df[df["asha"] == selected_asha]
 
 
-    # ---------- DUPLICATE LOGIC ----------
+    # ---------- DUPLICATE CALCULATION ----------
     dup = df_asha[df_asha["participant"].duplicated(keep=False)]
 
     dup_list = (
-        dup["participant"]
-        .value_counts()
-        .reset_index()
+        dup.groupby("participant")
+        .size()
+        .reset_index(name="Duplicate Count")
     )
 
-    dup_list.columns = ["Participant", "Duplicate Count"]
 
-
-    # ---------- TABLE 2 ----------
-    st.subheader("Duplicate Participants")
+    # ---------- SUMMARY TABLE ----------
+    st.subheader("Duplicate Summary")
 
     summary = pd.DataFrame({
         "ASHA":[selected_asha],
@@ -76,13 +74,13 @@ if "df" in st.session_state:
 
     st.dataframe(summary, use_container_width=True)
 
-    st.subheader("Actual Duplicate Participant List")
+
+    # ---------- DUPLICATE LIST ----------
+    st.subheader("Actual Duplicate Participants")
 
     st.dataframe(dup_list, use_container_width=True)
 
 
 else:
 
-    st.info("Click Refresh Data")
-
-
+    st.info("Click 🔄 Refresh Data to load KoBo data")
