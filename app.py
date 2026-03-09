@@ -55,10 +55,10 @@ if "df" in st.session_state:
 
 
     # ---------- DUPLICATE CALCULATION ----------
-    dup = df_asha[df_asha["participant"].duplicated(keep=False)]
+    dup = df_asha[df_asha["Participant"].duplicated(keep=False)]
 
     dup_list = (
-        dup.groupby("participant")
+        dup.groupby("Participant")
         .size()
         .reset_index(name="Duplicate Count")
     )
@@ -69,7 +69,7 @@ if "df" in st.session_state:
 
     summary = pd.DataFrame({
         "ASHA":[selected_asha],
-        "Duplicate Participants":[dup["participant"].nunique()]
+        "Duplicate Participants":[dup["Participant"].nunique()]
     })
 
     st.dataframe(summary, use_container_width=True)
@@ -84,3 +84,4 @@ if "df" in st.session_state:
 else:
 
     st.info("Click 🔄 Refresh Data to load KoBo data")
+
