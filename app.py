@@ -18,7 +18,7 @@ if st.button("🔄 Refresh Data"):
     df = pd.json_normalize(data['results'])
 
     # keep only needed columns
-    df = df[["asha","Paticipant","_submission_time"]]
+    
 
     # convert time
     df["_submission_time"] = pd.to_datetime(df["_submission_time"])
@@ -100,4 +100,5 @@ if "df" in st.session_state:
 
 else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
+
 
