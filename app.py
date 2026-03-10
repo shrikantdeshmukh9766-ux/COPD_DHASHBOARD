@@ -30,7 +30,7 @@ total_forms = df.groupby('asha').size().reset_index(name='total_forms')
 
 # duplicate participant count per ASHA
 dup_count = (
-    df.groupby('asha')['Paticipant']
+    df.groupby('asha')['Paticipant'] 
       .apply(lambda x: x.duplicated().sum())
       .reset_index(name='duplicate_participants')
 )
@@ -39,3 +39,4 @@ dup_count = (
 result = pd.merge(total_forms, dup_count, on='asha')
 
 print(result)
+
