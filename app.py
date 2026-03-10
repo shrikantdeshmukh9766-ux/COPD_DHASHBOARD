@@ -9,9 +9,9 @@ uploaded_file = st.file_uploader("Upload Excel file", type=["xlsx", "xls"])
 if uploaded_file:
     xls = pd.ExcelFile(uploaded_file)
     sheet_names = xls.sheet_names
-    sheet = st.selectbox("Select sheet to process", sheet_names)
+    sheet = st.selectbox("Select sheet to process")
     
-    df = pd.read_excel(uploaded_file, sheet_name=sheet)
+    df = pd.read_excel(uploaded_file)
     
     # 2️⃣ Select needed columns
     required_cols = ['Name of ASHA', 'Participant Unique Code', '_submission_time']
@@ -69,3 +69,4 @@ if uploaded_file:
                 file_name=f"{selected_asha}_duplicates.csv",
                 mime="text/csv"
             )
+
