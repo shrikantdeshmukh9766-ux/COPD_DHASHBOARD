@@ -9,7 +9,7 @@ form_id = "afWux6DQFqmZrEpK54BobD"
 kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
 
 
-# Refresh Data
+# -------------------- Refresh Data --------------------
 if st.button("🔄 Refresh Data"):
 
     kobo = KoboExtractor(my_token, kobo_base_url)
@@ -20,24 +20,27 @@ if st.button("🔄 Refresh Data"):
     # Clean column names
     df.columns = df.columns.str.split('/').str[-1]
 
-    # Convert submission time
-    df['_submission_time'] = pd.to_datetime(df['_submission_time'])
+    # Convert submission time (handle "Jan 27, 2026 1:05 PM" format)
+    df['_submission_time'] = pd.to_datetime(
+        df['_submission_time'],
+        format='%b %d, %Y %I:%M %p',
+        errors='coerce'
+    )
 
-    # Extract month
+    # Extract month name
     df['month'] = df['_submission_time'].dt.month_name()
 
     st.session_state["df"] = df
 
-
-# If data loaded
+# -------------------- If data loaded --------------------
 if "df" in st.session_state:
 
     df = st.session_state["df"]
 
-    # ---------------- MONTH FILTER (TABLE 1 ONLY) ----------------
+    # -------------------- MONTH FILTER (TABLE 1 ONLY) --------------------
     st.sidebar.header("Month Filter")
 
-    months = ["Overall"] + df["month"].dropna().unique()
+    months = ["Overall"] + list(calendar.month_name[1:])  # Jan to Dec
 
     selected_month = st.sidebar.selectbox(
         "Select Month",
@@ -49,8 +52,7 @@ if "df" in st.session_state:
     else:
         df_month = df[df["month"] == selected_month]
 
-
-    # ---------------- TABLE 1 ----------------
+    # -------------------- TABLE 1 --------------------
     st.subheader("Total Forms by ASHA")
 
     total_forms = (
@@ -61,8 +63,7 @@ if "df" in st.session_state:
 
     st.dataframe(total_forms, use_container_width=True)
 
-
-    # ---------------- ASHA FILTER (TABLE 2 ONLY) ----------------
+    # -------------------- ASHA FILTER (TABLE 2 & 3) --------------------
     st.sidebar.header("ASHA Filter")
 
     selected_asha = st.sidebar.selectbox(
@@ -72,8 +73,7 @@ if "df" in st.session_state:
 
     df_asha = df[df["asha"] == selected_asha]
 
-
-    # ---------------- DUPLICATES ----------------
+    # -------------------- DUPLICATES --------------------
     dup = df_asha[df_asha["Paticipant"].duplicated(keep=False)]
 
     dup_list = (
@@ -82,24 +82,24 @@ if "df" in st.session_state:
         .reset_index(name="Duplicate Count")
     )
 
-
-    # ---------------- TABLE 2 ----------------
+    # -------------------- TABLE 2: Duplicate Summary --------------------
     st.subheader("Duplicate Summary")
 
     summary = pd.DataFrame({
-        "ASHA":[selected_asha],
-        "Duplicate Participants":[dup["Paticipant"].nunique()]
+        "ASHA": [selected_asha],
+        "Unique Duplicate Participants": [dup["Paticipant"].nunique()],
+        "Total Duplicate Entries": [dup.shape[0]]
     })
 
     st.dataframe(summary, use_container_width=True)
 
-
-    # ---------------- TABLE 3 ----------------
+    # -------------------- TABLE 3: Actual Duplicate List --------------------
     st.subheader("Actual Duplicate Participant List")
 
-    st.dataframe(dup_list, use_container_width=True)
-
+    if dup_list.empty:
+        st.write("No duplicate participants for this ASHA.")
+    else:
+        st.dataframe(dup_list, use_container_width=True)
 
 else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
-
