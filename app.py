@@ -21,11 +21,7 @@ if st.button("🔄 Refresh Data"):
     df.columns = df.columns.str.split('/').str[-1]
 
     # Convert submission time (handle "Jan 27, 2026 1:05 PM" format)
-    df['_submission_time'] = pd.to_datetime(
-        df['_submission_time'],
-        format='%b %d, %Y %I:%M %p',
-        errors='coerce'
-    )
+    df['_submission_time'] = pd.to_datetime(df['_submission_time'], errors='coerce')
 
     # Extract month name
     df['month'] = df['_submission_time'].dt.month_name()
@@ -101,5 +97,6 @@ if "df" in st.session_state:
 
 else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
+
 
 
