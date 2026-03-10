@@ -7,35 +7,29 @@ st.title("ASHA Monitoring Dashboard from Excel")
 uploaded_file = st.file_uploader("Upload Excel file", type=["xlsx", "xls"])
 
 if uploaded_file:
+    # Read all sheet names
     xls = pd.ExcelFile(uploaded_file)
     sheet_names = xls.sheet_names
     sheet = st.selectbox("Select sheet to process", sheet_names)
     
+    # Read selected sheet
     df = pd.read_excel(uploaded_file, sheet_name=sheet)
     
     st.subheader("Preview of Uploaded Data")
     st.dataframe(df.head())
     
-    # 2️⃣ Detect columns automatically
-    col_mapping = {}
-    for col in df.columns:
-        if 'asha' in col.lower():
-            col_mapping['Name of ASHA'] = col
-        elif 'participant' in col.lower():
-            col_mapping['Participant Unique Code'] = col
-        elif 'submission' in col.lower() and 'time' in col.lower():
-            col_mapping['_submission_time'] = col
+    # 2️⃣ Check required columns
+    required_cols = ['Participant Unique Code', 'Name of ASHA', '_submission_time']
+    missing_cols = [col for col in required_cols if col not in df.columns]
     
-    if len(col_mapping) < 3:
-        st.error(f"Could not find all required columns. Detected: {col_mapping}")
+    if missing_cols:
+        st.error(f"Missing required columns: {missing_cols}")
     else:
-        df = df[[col_mapping['Name of ASHA'], col_mapping['Participant Unique Code'], col_mapping['_submission_time']]].copy()
-        df.columns = ['Name of ASHA', 'Participant Unique Code', '_submission_time']
-        
-        # Ensure datetime
+        # Keep only required columns
+        df = df[required_cols].copy()
         df['_submission_time'] = pd.to_datetime(df['_submission_time'], errors='coerce')
         
-        # ---------------- TABLE 1: Overall forms ----------------
+        # ---------------- TABLE 1 ----------------
         st.subheader("Table 1: Forms Submitted per ASHA")
         df['Month'] = df['_submission_time'].dt.to_period('M')
         month_options = ["All"] + sorted(df['Month'].dropna().astype(str).unique())
@@ -48,7 +42,7 @@ if uploaded_file:
         table1 = table1_df.groupby('Name of ASHA').size().reset_index(name='Forms Submitted')
         st.dataframe(table1)
         
-        # ---------------- TABLE 2: Duplicate Count per ASHA ----------------
+        # ---------------- TABLE 2 ----------------
         st.subheader("Table 2: Duplicate Participant Count per ASHA")
         table2 = (
             df.groupby('Name of ASHA')['Participant Unique Code']
@@ -57,12 +51,15 @@ if uploaded_file:
         )
         st.dataframe(table2)
         
-        # ---------------- TABLE 3: Actual Duplicates per ASHA ----------------
-        st.subheader("Table 3: List of Actual Duplicate Participants")
+        # ---------------- TABLE 3 ----------------
+        st.subheader("Table 3: Actual Duplicate Participants (Filter by ASHA)")
+        # Dropdown to select ASHA
         asha_list = df['Name of ASHA'].dropna().unique()
-        selected_asha = st.selectbox("Select ASHA to view duplicates", asha_list, key="asha_dup")
+        selected_asha = st.selectbox("Select ASHA for duplicate list", asha_list, key="asha_dup")
         
+        # Filter by selected ASHA
         asha_df = df[df['Name of ASHA'] == selected_asha]
+        # Find duplicates **within that ASHA**
         duplicates = asha_df[asha_df.duplicated(subset=['Participant Unique Code'], keep=False)]
         
         if duplicates.empty:
