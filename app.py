@@ -37,7 +37,7 @@ if "df" in st.session_state:
     # ---------------- MONTH FILTER (TABLE 1 ONLY) ----------------
     st.sidebar.header("Month Filter")
 
-    months = ["Overall"] + sorted(df["month"].dropna().unique())
+    months = ["Overall"] + df["month"].dropna().unique()
 
     selected_month = st.sidebar.selectbox(
         "Select Month",
@@ -102,3 +102,4 @@ if "df" in st.session_state:
 
 else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
+
