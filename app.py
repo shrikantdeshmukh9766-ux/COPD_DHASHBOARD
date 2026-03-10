@@ -4,6 +4,7 @@ from koboextractor import KoboExtractor
 
 st.title("ASHA Form Submission Dashboard")
 
+
 my_token = "23801d339dd6d16509a79250731f126401d5f7a3"
 form_id = "afWux6DQFqmZrEpK54BobD"
 kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
@@ -37,7 +38,12 @@ if "df" in st.session_state:
     # ---------------- MONTH FILTER ----------------
     st.sidebar.header("Month Filter")
 
-    months = ["Overall"] + sorted(df["month"].dropna().unique())
+    month_order = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+    ]
+
+    months = ["Overall"] + [m for m in month_order if m in df["month"].unique()]
 
     selected_month = st.sidebar.selectbox(
         "Select Month",
@@ -57,6 +63,7 @@ if "df" in st.session_state:
         df_month.groupby("asha")
         .size()
         .reset_index(name="Forms Filled")
+        .sort_values("Forms Filled", ascending=False)
     )
 
     st.dataframe(total_forms, use_container_width=True)
@@ -65,12 +72,13 @@ if "df" in st.session_state:
     # ---------------- TABLE 2 ----------------
     st.subheader("ASHA Wise Duplicate Participants")
 
-    dup_all = df[df.duplicated(subset=["asha","Paticipant"], keep=False)]
+    dup_all = df_month[df_month.duplicated(subset=["asha","Paticipant"], keep=False)]
 
     dup_summary = (
         dup_all.groupby("asha")["Paticipant"]
         .nunique()
         .reset_index(name="Duplicate Participants")
+        .sort_values("Duplicate Participants", ascending=False)
     )
 
     st.dataframe(dup_summary, use_container_width=True)
@@ -81,10 +89,10 @@ if "df" in st.session_state:
 
     selected_asha = st.sidebar.selectbox(
         "Select ASHA",
-        sorted(df["asha"].dropna().unique())
+        sorted(df_month["asha"].dropna().unique())
     )
 
-    df_asha = df[df["asha"] == selected_asha]
+    df_asha = df_month[df_month["asha"] == selected_asha]
 
 
     # ---------------- DUPLICATE LIST ----------------
@@ -94,6 +102,7 @@ if "df" in st.session_state:
         dup.groupby("Paticipant")
         .size()
         .reset_index(name="Duplicate Count")
+        .sort_values("Duplicate Count", ascending=False)
     )
 
 
@@ -105,4 +114,3 @@ if "df" in st.session_state:
 
 else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
-
