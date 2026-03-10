@@ -29,7 +29,7 @@ if st.button("🔄 Refresh Data"):
 
         start += limit
 
-    df = pd.json_normalize(data['results'])
+    df = pd.json_normalize(results)
 
     # Clean column names
     df.columns = df.columns.str.split('/').str[-1]
@@ -111,6 +111,7 @@ if "df" in st.session_state:
 
 else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
+
 
 
 
