@@ -41,12 +41,10 @@ if "df" in st.session_state:
     # -------------------- MONTH FILTER (TABLE 1 ONLY) --------------------
     st.sidebar.header("Month Filter")
 
-    months = ["Overall"] + list(calendar.month_name[1:])  # Jan to Dec
+    months = ["Overall", "January", "February", "March", "April", "May", "June",
+              "July", "August", "September", "October", "November", "December"]
 
-    selected_month = st.sidebar.selectbox(
-        "Select Month",
-        months
-    )
+    selected_month = st.sidebar.selectbox("Select Month", months)
 
     if selected_month == "Overall":
         df_month = df
@@ -104,4 +102,3 @@ if "df" in st.session_state:
 
 else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
-
