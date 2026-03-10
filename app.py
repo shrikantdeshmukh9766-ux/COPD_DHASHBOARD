@@ -19,7 +19,7 @@ if uploaded_file:
     st.dataframe(df.head())
     
     # 2️⃣ Check required columns
-    required_cols = ['Participant Unique Code', 'Name of ASHA', '_submission_time']
+    required_cols = ['Select the Name of Asha', 'Select the Participant Unique Code', '_submission_time']
     missing_cols = [col for col in required_cols if col not in df.columns]
     
     if missing_cols:
@@ -39,13 +39,13 @@ if uploaded_file:
         if selected_month != "All":
             table1_df = table1_df[table1_df['Month'].astype(str) == selected_month]
         
-        table1 = table1_df.groupby('Name of ASHA').size().reset_index(name='Forms Submitted')
+        table1 = table1_df.groupby('Select the Name of Asha').size().reset_index(name='Forms Submitted')
         st.dataframe(table1)
         
         # ---------------- TABLE 2 ----------------
         st.subheader("Table 2: Duplicate Participant Count per ASHA")
         table2 = (
-            df.groupby('Name of ASHA')['Participant Unique Code']
+            df.groupby('Select the Name of Asha')['Select the Participant Unique Code']
               .apply(lambda x: x.duplicated().sum())
               .reset_index(name='Duplicate Participants')
         )
@@ -54,13 +54,13 @@ if uploaded_file:
         # ---------------- TABLE 3 ----------------
         st.subheader("Table 3: Actual Duplicate Participants (Filter by ASHA)")
         # Dropdown to select ASHA
-        asha_list = df['Name of ASHA'].dropna().unique()
+        asha_list = df['Select the Name of Asha'].dropna().unique()
         selected_asha = st.selectbox("Select ASHA for duplicate list", asha_list, key="asha_dup")
         
         # Filter by selected ASHA
-        asha_df = df[df['Name of ASHA'] == selected_asha]
+        asha_df = df[df['Select the Name of Asha'] == selected_asha]
         # Find duplicates **within that ASHA**
-        duplicates = asha_df[asha_df.duplicated(subset=['Participant Unique Code'], keep=False)]
+        duplicates = asha_df[asha_df.duplicated(subset=['Select the Participant Unique Code'], keep=False)]
         
         if duplicates.empty:
             st.info(f"No duplicates found for ASHA: {selected_asha}")
@@ -72,3 +72,4 @@ if uploaded_file:
                 file_name=f"{selected_asha}_duplicates.csv",
                 mime="text/csv"
             )
+
