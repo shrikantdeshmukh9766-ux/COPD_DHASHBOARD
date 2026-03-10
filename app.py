@@ -12,7 +12,22 @@ kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
 # -------------------- Refresh Data --------------------
 if st.button("🔄 Refresh Data"):
     kobo = KoboExtractor(my_token, kobo_base_url)
-    data = kobo.get_data(form_id) 
+    
+    # Fetch all data using pagination
+    results = []
+    start = 0
+    limit = 500  # default page size
+
+    while True:
+        # get_data only takes form_id and optional start
+        page = kobo.get_data(form_id, start=start)
+        results.extend(page['results'])
+
+        # If fewer rows returned than limit, we reached the last page
+        if len(page['results']) < limit:
+            break
+
+        start += limit
 
     df = pd.json_normalize(data['results'])
 
@@ -96,6 +111,7 @@ if "df" in st.session_state:
 
 else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
+
 
 
 
