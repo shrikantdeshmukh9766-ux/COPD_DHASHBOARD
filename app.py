@@ -13,7 +13,7 @@ kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
 if st.button("🔄 Refresh Data"):
 
     kobo = KoboExtractor(my_token, kobo_base_url)
-   data = kobo.get_data(form_id, params={"limit": 20000})  # increase limit
+    data = kobo.get_data(form_id, params={"limit": 20000}) 
 
     df = pd.json_normalize(data['results'])
 
@@ -97,6 +97,7 @@ if "df" in st.session_state:
 
 else:
     st.info("Click 🔄 Refresh Data to load KoBo data")
+
 
 
 
