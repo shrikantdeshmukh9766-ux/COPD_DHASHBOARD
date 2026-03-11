@@ -7,19 +7,18 @@ file = st.file_uploader("Upload Excel file", type=["xlsx","csv"])
 
 if file is not None:
 
-    # Read file
     if file.name.endswith(".csv"):
         df = pd.read_csv(file)
     else:
         df = pd.read_excel(file)
 
-    # Convert submission time
+    # convert submission time
     df['_submission_time'] = pd.to_datetime(df['_submission_time'])
 
-    # Create Month column
+    # month column
     df['Month'] = df['_submission_time'].dt.strftime('%b')
 
-    # ------------------ TABLE 1 ------------------
+    # ---------------- TABLE 1 ----------------
     st.subheader("Table 1: ASHA Month-wise Form Count")
 
     table1 = pd.pivot_table(
@@ -33,10 +32,9 @@ if file is not None:
 
     st.dataframe(table1)
 
-    # ------------------ TABLE 2 ------------------
-    st.subheader("Table 2: Duplicate Participants by ASHA")
+    # ---------------- TABLE 2 ----------------
+    st.subheader("Table 2: Duplicate Forms Count by ASHA")
 
-    # find duplicates within each ASHA
     dup = df[df.duplicated(
         subset=['Select the Name of Asha','Select the Participant Unique Code'],
         keep=False
@@ -50,3 +48,16 @@ if file is not None:
     )
 
     st.dataframe(table2)
+
+    # ---------------- TABLE 3 ----------------
+    st.subheader("Table 3: Actual Duplicate Participant List")
+
+    asha_list = dup['Select the Name of Asha'].unique()
+
+    selected_asha = st.selectbox("Select ASHA", asha_list)
+
+    table3 = dup[dup['Select the Name of Asha'] == selected_asha][
+        ['Select the Name of Asha','Select the Participant Unique Code','_submission_time']
+    ]
+
+    st.dataframe(table3)
