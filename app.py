@@ -5,7 +5,7 @@ from datetime import datetime
 # Configuration
 KOBO_TOKEN = "23801d339dd6d16509a79250731f126401d5f7a3"
 FORM_ID = "afWux6DQFqmZrEpK54BobD"
-KOBO_URL = "https://kf.kobotoolbox.org"  # or https://kobo.humanitarianresponse.info
+KOBO_URL = "https://kobo.humanitarianresponse.info/api/v2"  # or https://kobo.humanitarianresponse.info
 
 def fetch_kobo_data(token, form_id):
     """Fetch data from KoBoToolbox API"""
@@ -211,3 +211,4 @@ if __name__ == "__main__":
             print("✗ Failed to process data. Please check column names.")
     else:
         print("✗ Failed to fetch data. Please check your token and form ID.")
+
