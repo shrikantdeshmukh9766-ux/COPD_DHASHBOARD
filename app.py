@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import openpyxl
 
 st.title("Excel Variable Viewer")
 
@@ -26,3 +27,4 @@ if file is not None:
     # Show preview
     st.subheader("Data Preview")
     st.dataframe(df.head())
+
