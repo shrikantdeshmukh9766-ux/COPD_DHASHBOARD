@@ -1,11 +1,10 @@
 import streamlit as st
 import pandas as pd
-import openpyxl
 
-st.title("Excel Variable Viewer")
+st.title("ASHA Form Monitoring Dashboard")
 
-# Upload file
-file = st.file_uploader("Upload Excel file", type=["xlsx", "xls", "csv"])
+# Upload Excel
+file = st.file_uploader("Upload Excel file", type=["xlsx","csv"])
 
 if file is not None:
 
@@ -15,16 +14,33 @@ if file is not None:
     else:
         df = pd.read_excel(file)
 
-    st.success("File uploaded successfully")
+    # Convert submission time to datetime
+    df['_submission_time'] = pd.to_datetime(df['_submission_time'])
 
-    # Show dataset dimension
-    st.write("Dataset shape:", df.shape)
+    # Create month column
+    df['Month'] = df['_submission_time'].dt.to_period('M').astype(str)
 
-    # Show column names
-    st.subheader("Variable Names (Columns)")
-    st.write(list(df.columns))
+    # Group data
+    table = (
+        df.groupby(['Select the Name of Asha','Month'])
+        ['Select the Participant Unique Code']
+        .count()
+        .reset_index(name='Forms Filled')
+    )
 
-    # Show preview
-    st.subheader("Data Preview")
-    st.dataframe(df.head())
+    st.subheader("ASHA-wise Month-wise Form Count")
+    st.dataframe(table)
 
+    # Pivot table (better view)
+    st.subheader("ASHA Monthly Summary")
+
+    pivot = pd.pivot_table(
+        df,
+        index='Select the Name of Asha',
+        columns='Month',
+        values='Select the Participant Unique Code',
+        aggfunc='count',
+        fill_value=0
+    )
+
+    st.dataframe(pivot)
