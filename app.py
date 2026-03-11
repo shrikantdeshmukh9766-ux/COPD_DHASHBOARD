@@ -1,24 +1,28 @@
 import streamlit as st
 import pandas as pd
-from koboextractor import KoboExtractor
 
-st.title("ASHA Form Submission Dashboard")
+st.title("Excel Variable Viewer")
 
-my_token = "23801d339dd6d16509a79250731f126401d5f7a3"
-form_id = "afWux6DQFqmZrEpK54BobD"
-kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
+# Upload file
+file = st.file_uploader("Upload Excel file", type=["xlsx", "xls", "csv"])
 
-@st.cache_data
-def load_data():
-    kobo = KoboExtractor(my_token, kobo_base_url)
-    data = kobo.get_data(form_id)
-    df = pd.json_normalize(data)
-    return df
+if file is not None:
 
-df = load_data()
+    # Read file
+    if file.name.endswith(".csv"):
+        df = pd.read_csv(file)
+    else:
+        df = pd.read_excel(file)
 
-# show shape in app
-st.write("Dataset shape:", df.shape)
+    st.success("File uploaded successfully")
 
-# optional: preview data
-st.dataframe(df.head())
+    # Show dataset dimension
+    st.write("Dataset shape:", df.shape)
+
+    # Show column names
+    st.subheader("Variable Names (Columns)")
+    st.write(list(df.columns))
+
+    # Show preview
+    st.subheader("Data Preview")
+    st.dataframe(df.head())
