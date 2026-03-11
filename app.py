@@ -18,5 +18,5 @@ def load_data():
 
 df = load_data()
 
-# show columns to identify correct names
-st.write("Columns in dataset:", df.columns)
+print(df)
+
