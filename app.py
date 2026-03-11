@@ -18,5 +18,6 @@ def load_data():
 
 df = load_data()
 
-print(df)
+print(df.shape)
+
 
