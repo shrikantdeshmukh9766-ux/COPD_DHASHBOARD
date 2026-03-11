@@ -4,7 +4,6 @@ from koboextractor import KoboExtractor
 
 st.title("ASHA Form Submission Dashboard")
 
-# Kobo credentials
 my_token = "23801d339dd6d16509a79250731f126401d5f7a3"
 form_id = "afWux6DQFqmZrEpK54BobD"
 kobo_base_url = "https://kobo.humanitarianresponse.info/api/v2"
@@ -18,6 +17,8 @@ def load_data():
 
 df = load_data()
 
-print(df.shape)
+# show shape in app
+st.write("Dataset shape:", df.shape)
 
-
+# optional: preview data
+st.dataframe(df.head())
