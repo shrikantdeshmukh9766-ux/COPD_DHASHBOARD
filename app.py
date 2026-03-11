@@ -3,8 +3,8 @@ import pandas as pd
 
 st.title("ASHA Monitoring Dashboard")
 
-# Upload Excel/CSV file
-file = st.file_uploader("Upload Excel file", type=["xlsx","csv"])
+# Upload file
+file = st.file_uploader("Upload Excel/CSV file", type=["xlsx","csv"])
 
 if file is not None:
 
@@ -17,7 +17,7 @@ if file is not None:
     # Convert submission time
     df['_submission_time'] = pd.to_datetime(df['_submission_time'])
 
-    # Month name and month number
+    # Month name and number
     df['Month'] = df['_submission_time'].dt.strftime('%b')
     df['Month_num'] = df['_submission_time'].dt.month
 
@@ -42,20 +42,23 @@ if file is not None:
     st.dataframe(table1)
 
     # =========================
-    # TABLE 2 : DUPLICATE COUNT
+    # FIND DUPLICATES
     # =========================
-    st.subheader("Table 2: Duplicate Forms Count by ASHA")
-
     dup = df[df.duplicated(
         subset=['Select the Name of Asha','Select the Participant Unique Code'],
         keep=False
     )]
 
+    # =========================
+    # TABLE 2 : DUPLICATE COUNT
+    # =========================
+    st.subheader("Table 2: Duplicate Participant Codes by ASHA")
+
     table2 = (
         dup.groupby('Select the Name of Asha')
         ['Select the Participant Unique Code']
-        .count()
-        .reset_index(name='Duplicate Forms')
+        .nunique()
+        .reset_index(name='Duplicate Participants')
     )
 
     st.dataframe(table2)
@@ -73,6 +76,6 @@ if file is not None:
         ['Select the Name of Asha',
          'Select the Participant Unique Code',
          '_submission_time']
-    ]
+    ].sort_values('Select the Participant Unique Code')
 
     st.dataframe(table3)
